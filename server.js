@@ -2,14 +2,18 @@ const express = require('express');
 const dotenv = require('dotenv');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const morgan = require('morgan');
+const connectDB = require('./config/db');
 
-// Route files
-const bootcamps = require('./routes/bootcamps');
+// Connect to database
+connectDB();
 
 // Load env vars
 dotenv.config({ path: './config/config.env' });
 const PORT = process.env.PORT || 5000;
 const app = express();
+
+// Route files
+const bootcamps = require('./routes/bootcamps');
 
 // Dev logging middleware
 if (process.env.NODE_ENV === 'dev') {
