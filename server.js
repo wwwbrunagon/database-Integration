@@ -11,6 +11,8 @@ connectDB();
 dotenv.config({ path: './config/config.env' });
 const PORT = process.env.PORT || 5000;
 const app = express();
+// Body parser
+app.use(express.json());
 
 // Route files
 const bootcamps = require('./routes/bootcamps');
