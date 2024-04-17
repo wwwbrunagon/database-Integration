@@ -23,7 +23,14 @@ if (process.env.NODE_ENV === 'dev') {
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
 
-app.listen(
+const server = app.listen(
   PORT,
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`),
 );
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.log(`Error: ${err.message}`);
+  // Close server & exit process
+  server.close(() => process.exit(1));
+});
