@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable comma-dangle */
 /* eslint-disable consistent-return */
 const Bootcamp = require('../models/Bootcamp');
@@ -8,12 +9,25 @@ const ErrorResponse = require('../utils/errorResponse');
 // @route   GET /api/v1/bootcamps
 // @access  Public
 exports.getBootcamps = asyncHandler(async (req, res) => {
-  const bootcamps = await Bootcamp.find();
+  console.log(req.query);
+  // ?averageCost[gte]=5000
+
+  let query;
+
+  let queryStr = JSON.stringify(req.query);
+  queryStr = queryStr.replace(
+    /\b(gt|gte|lt|lte|in)\b/g,
+    (match) => `$${match}`
+  );
+
+  query = Bootcamp.find(JSON.parse(queryStr));
+
+  const bootcamps = await query;
   res.status(200).json({ success: true, data: bootcamps });
 });
 
 // @desc    Get single bootcamps
-// @route   GET /api/v1/bootcamps/:id
+// @route   GET /api/v1/bo  otcamps/:id
 // @access  Public
 
 exports.getBootcamp = asyncHandler(async (req, res) => {
