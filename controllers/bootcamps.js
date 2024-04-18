@@ -1,4 +1,5 @@
 const Bootcamp = require('../models/Bootcamp');
+const ErrorResponse = require('../utils/errorResponse');
 
 // @desc    Get all bootcamps
 // @route   GET /api/v1/bootcamps
@@ -10,37 +11,70 @@ exports.getBootcamps = (req, res) => {
 // @desc    Get single bootcamps
 // @route   GET /api/v1/bootcamps/:id
 // @access  Public
-exports.getBootcamp = (req, res) => {
-  res.status(200).json({ sucess: true, msg: `Get bootcamp ${req.params.id}` });
+// eslint-disable-next-line consistent-return
+exports.getBootcamp = async (req, res, next) => {
+  try {
+    const bootcamp = await Bootcamp.findById(req.params.id);
+    if (!bootcamp) {
+      return new ErrorResponse(
+        `Bootcamp not found with id of ${req.params.id}`,
+        404,
+      );
+    }
+  } catch (err) {
+    next(err);
+  }
 };
 
 // @desc    Create new bootcamp
 // @route   POST /api/v1/bootcamps
 // @access  Private
-exports.createBootcamp = async (req, res) => {
+exports.createBootcamp = async (req, res, next) => {
   try {
     const bootcamp = await Bootcamp.create(req.body);
-    res.status(201).json({ success: true, data: bootcamp });
+    res.status(201).json({
+      success: true,
+      data: bootcamp,
+    });
   } catch (err) {
-    res.status(400).json({ success: false });
+    next(err);
   }
 };
 
 // @desc    Update bootcamp
 // @route   PUT /api/v1/bootcamps/:id
 // @access  Private
-exports.updateBootcamp = (req, res) => {
-  res.status(200).json({
-    sucess: true,
-    msg: `Update bootcamp ${req.params.id}`,
-  });
+// eslint-disable-next-line consistent-return
+exports.updateBootcamp = async (req, res, next) => {
+  try {
+    const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!bootcamp) {
+      return next(
+        new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404),
+      );
+    }
+    res.status(200).json({ success: true, data: bootcamp });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // @desc    Delete bootcamp
 // @route   DELETE /api/v1/bootcamps/:id
 // @access  Private
-exports.deleteBootcamp = (req, res) => {
-  res
-    .status(200)
-    .json({ sucess: true, msg: `Delete bootcamp ${req.params.id}` });
+// eslint-disable-next-line consistent-return
+exports.deleteBootcamp = (req, res, next) => {
+  try {
+    const bootcamp = Bootcamp.findByIdAndDelete(req.params.id);
+    if (!bootcamp) {
+      return next(
+        new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404),
+      );
+    }
+  } catch (err) {
+    next(err);
+  }
 };
