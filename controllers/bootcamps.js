@@ -1,6 +1,4 @@
-/* eslint-disable prefer-const */
-/* eslint-disable comma-dangle */
-/* eslint-disable consistent-return */
+/* eslint-disable */
 const Bootcamp = require('../models/Bootcamp');
 const asyncHandler = require('./middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
@@ -9,21 +7,48 @@ const ErrorResponse = require('../utils/errorResponse');
 // @route   GET /api/v1/bootcamps
 // @access  Public
 exports.getBootcamps = asyncHandler(async (req, res) => {
-  console.log(req.query);
-  // ?averageCost[gte]=5000
-
   let query;
 
-  let queryStr = JSON.stringify(req.query);
-  queryStr = queryStr.replace(
+  // Copy req.query
+  const reqQuery = { ...req.query };
+
+  // Fields to exclude
+  const removeFields = ['select', 'sort', 'page', 'limit'];
+
+  // Loop over removeFields and delete them from reqQuery
+  removeFields.forEach((param) => delete reqQuery[param]);
+
+  // Create query string
+  let queryStr = JSON.stringify(reqQuery);
+
+  // Create operators ($gt, $gte, etc...)
+  queryStr = queryStr = queryStr.replace(
     /\b(gt|gte|lt|lte|in)\b/g,
     (match) => `$${match}`
   );
 
+  // Finding resource
   query = Bootcamp.find(JSON.parse(queryStr));
 
+  // Sort
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(', ').join(' ');
+    query = query.sort(sortBy);
+  } else {
+    query = query.sort('-createdAt');
+  }
+
+  // Select Fields
+  if (req.query.select) {
+    const fields = req.query.select.split(',').join(' ');
+    query = query.select(fields);
+  }
+
+  // Executing query
   const bootcamps = await query;
-  res.status(200).json({ success: true, data: bootcamps });
+  res
+    .status(200)
+    .json({ success: true, count: bootcamps.length, data: bootcamps });
 });
 
 // @desc    Get single bootcamps
